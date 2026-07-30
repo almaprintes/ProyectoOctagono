@@ -1,16 +1,11 @@
-PROYECTO OCTÁGONO v0.1
+PROYECTO OCTÁGONO · ALPHA 0.1
 
-PROBAR EN IPHONE SIN INSTALAR:
-1. Descomprime el ZIP.
-2. Abre index.html en Safari desde un alojamiento web o GitHub Pages.
-   Nota: iOS no ejecuta correctamente una web completa directamente desde la app Archivos.
-3. Para instalarla como app: Safari > Compartir > Añadir a pantalla de inicio.
+- Swype continuo real.
+- Estela luminosa.
+- Retroceso de una casilla sin levantar el dedo.
+- Ejecución automática al soltar.
+- Rival anuncia su ataque.
+- Fases de distancia y suelo.
+- PWA instalable.
 
-CONTROLES:
-- Desliza por fichas contiguas, como en el teclado Swype.
-- Levanta el dedo para ejecutar el combo.
-- Mezclar cuesta energía.
-- Guardia reduce el siguiente ataque.
-- Jab + patada y paso + derribo tienen bonificación.
-
-Este prototipo prueba solo el núcleo jugable.
+En iPhone debe abrirse desde un servidor web, por ejemplo GitHub Pages. La app Archivos no ejecuta correctamente todas las funciones de una PWA.
