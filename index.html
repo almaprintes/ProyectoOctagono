@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#101318">
+<title>Proyecto Octágono v0.1</title>
+<style>
+:root{
+  --bg:#0d1015; --panel:#171c24; --panel2:#202733; --text:#f5f7fb;
+  --muted:#a7b0c0; --accent:#f0b429; --danger:#ef5350; --good:#36c987;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:radial-gradient(circle at 50% 15%,#252b35,#0d1015 48%);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
+body{min-height:100dvh}
+button{font:inherit}
+.app{height:100dvh;display:flex;flex-direction:column;padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom)}
+.top{display:flex;align-items:center;justify-content:space-between;padding:10px 2px 8px}
+.brand{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.round{font-weight:800;font-size:13px;background:#ffffff12;border:1px solid #ffffff14;border-radius:99px;padding:7px 12px}
+.fighter{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.fighter.player{grid-template-columns:auto 1fr}
+.avatar{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(145deg,#2c3441,#171c24);border:1px solid #ffffff18;font-size:24px;box-shadow:0 8px 24px #0008}
+.info{min-width:0}
+.name{font-weight:900;font-size:14px;margin-bottom:5px;display:flex;justify-content:space-between;gap:8px}
+.stats{font-size:11px;color:var(--muted)}
+.bar{height:9px;background:#090b0f;border-radius:99px;overflow:hidden;border:1px solid #ffffff10}
+.fill{height:100%;width:100%;transition:width .35s ease}
+.enemy .fill{background:linear-gradient(90deg,#ab2637,#ff5c5c)}
+.player .fill{background:linear-gradient(90deg,#1d9b68,#47e69e)}
+.energy{margin-top:4px;height:5px}
+.energy .fill{background:linear-gradient(90deg,#b47e0e,#ffd95b)}
+.arena-wrap{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;margin:7px 0}
+.octagon{position:relative;width:min(94vw,440px);aspect-ratio:1/1;clip-path:polygon(29% 0,71% 0,100% 29%,100% 71%,71% 100%,29% 100%,0 71%,0 29%);background:linear-gradient(145deg,#29313c,#151a21);padding:14px;filter:drop-shadow(0 18px 36px #000a)}
+.octagon:before{content:"";position:absolute;inset:5px;clip-path:inherit;border:5px solid #d0d5dc;background:repeating-linear-gradient(0deg,transparent 0 28px,#ffffff08 29px 30px),repeating-linear-gradient(90deg,transparent 0 28px,#ffffff08 29px 30px);opacity:.78}
+.mat{position:absolute;inset:21px;clip-path:polygon(29% 0,71% 0,100% 29%,100% 71%,71% 100%,29% 100%,0 71%,0 29%);background:radial-gradient(circle,#3a4350,#222a34 69%,#12171d)}
+.grid{position:absolute;inset:14%;display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(5,1fr);gap:7px;touch-action:none;user-select:none}
+.tile{position:relative;border-radius:16px;background:linear-gradient(145deg,#343e4c,#1c222b);border:1px solid #ffffff18;display:grid;place-items:center;font-size:clamp(20px,6vw,31px);box-shadow:inset 0 1px #ffffff16,0 7px 12px #0005;transition:transform .12s,filter .12s,opacity .2s}
+.tile small{position:absolute;right:5px;bottom:3px;font-size:8px;font-weight:900;color:#dbe2ee99}
+.tile.selected{transform:scale(1.09);filter:brightness(1.35);outline:2px solid var(--accent);z-index:3}
+.tile.used{animation:pop .38s ease}
+@keyframes pop{50%{transform:scale(.3);opacity:.15}}
+.path{position:absolute;inset:14%;pointer-events:none;overflow:visible;z-index:2}
+.fighter-dot{position:absolute;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:21px;border:2px solid #fff8;box-shadow:0 8px 20px #000b;transition:all .32s cubic-bezier(.2,.85,.25,1.2);z-index:4}
+.fighter-dot.rival{top:4%;left:calc(50% - 20px);background:#a92d3c}
+.fighter-dot.me{bottom:4%;left:calc(50% - 20px);background:#1e9e70}
+.hit{animation:hit .32s}
+@keyframes hit{20%{transform:translateX(-9px) rotate(-6deg)}60%{transform:translateX(8px) rotate(5deg)}}
+.flash{position:absolute;inset:0;background:#fff0;pointer-events:none;z-index:8}
+.flash.on{animation:flash .22s}
+@keyframes flash{50%{background:#fff8}}
+.combo-box{min-height:56px;background:#0b0e13cc;border:1px solid #ffffff12;border-radius:18px;padding:9px 11px;display:flex;align-items:center;gap:10px;backdrop-filter:blur(12px)}
+.combo-label{font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.12em;min-width:54px}
+.combo{flex:1;display:flex;gap:4px;align-items:center;overflow:hidden;font-size:22px;white-space:nowrap}
+.mult{font-size:21px;font-weight:1000;color:var(--accent)}
+.message{text-align:center;min-height:34px;padding:7px 4px 3px;font-weight:900;font-size:14px;color:#e8edf5}
+.controls{display:flex;gap:8px;padding:3px 0 10px}
+.btn{flex:1;border:0;border-radius:15px;padding:12px 10px;font-weight:900;color:white;background:#252d38}
+.btn.primary{background:linear-gradient(135deg,#d8940c,#f7bd35);color:#181105}
+.btn:disabled{opacity:.35}
+.overlay{position:fixed;inset:0;background:#080a0edb;display:none;align-items:center;justify-content:center;padding:28px;z-index:20;backdrop-filter:blur(10px)}
+.overlay.show{display:flex}
+.card{width:min(100%,380px);background:linear-gradient(160deg,#252d38,#13171e);border:1px solid #ffffff18;border-radius:28px;padding:26px;text-align:center;box-shadow:0 30px 80px #000c}
+.card .big{font-size:58px}
+.card h1{margin:5px 0 8px;font-size:30px}
+.card p{color:var(--muted);line-height:1.45}
+.card button{width:100%;border:0;border-radius:16px;padding:15px;font-weight:1000;background:var(--accent);color:#181105}
+.tip{font-size:11px;color:var(--muted);text-align:center;padding-bottom:5px}
+@media (max-height:700px){.avatar{width:36px;height:36px}.octagon{width:min(77vh,94vw)}.combo-box{min-height:48px}.controls{padding-bottom:4px}.tip{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top"><div class="brand">Proyecto Octágono · v0.1</div><div class="round" id="round">R1 · 01:30</div></div>
+
+  <div class="fighter enemy">
+    <div class="info">
+      <div class="name"><span>RICO “EL MURO”</span><span id="enemyHpText">100</span></div>
+      <div class="bar"><div class="fill" id="enemyHp"></div></div>
+      <div class="stats">Rival · Presión y derribos</div>
+    </div>
+    <div class="avatar">😠</div>
+  </div>
+
+  <div class="arena-wrap">
+    <div class="octagon">
+      <div class="mat"></div>
+      <div class="fighter-dot rival" id="rivalDot">🥷</div>
+      <svg class="path" id="pathSvg"><polyline id="pathLine" points="" fill="none" stroke="#f4bd39" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/></svg>
+      <div class="grid" id="grid"></div>
+      <div class="fighter-dot me" id="meDot">🥊</div>
+      <div class="flash" id="flash"></div>
+    </div>
+  </div>
+
+  <div class="fighter player">
+    <div class="avatar">😤</div>
+    <div class="info">
+      <div class="name"><span>TÚ · NOVATO</span><span id="playerHpText">100</span></div>
+      <div class="bar"><div class="fill" id="playerHp"></div></div>
+      <div class="bar energy"><div class="fill" id="energy"></div></div>
+      <div class="stats">Energía · Los combos largos cansan más</div>
+    </div>
+  </div>
+
+  <div class="message" id="message">Desliza por fichas contiguas y levanta el dedo</div>
+  <div class="combo-box">
+    <div class="combo-label">Combo</div>
+    <div class="combo" id="combo">—</div>
+    <div class="mult" id="mult">x0</div>
+  </div>
+  <div class="controls">
+    <button class="btn" id="shuffle">Mezclar</button>
+    <button class="btn primary" id="endTurn" disabled>Ejecutar combo</button>
+  </div>
+  <div class="tip">Puedes atravesar fichas en horizontal, vertical o diagonal. No puedes repetir una ficha.</div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="card">
+    <div class="big" id="resultEmoji">🏆</div>
+    <h1 id="resultTitle">Victoria</h1>
+    <p id="resultText"></p>
+    <button id="restart">Pelear otra vez</button>
+  </div>
+</div>
+
+<script>
+const ACTIONS = [
+  {id:'jab',icon:'🥊',name:'Jab',damage:4,energy:5,weight:31},
+  {id:'kick',icon:'🦵',name:'Patada',damage:7,energy:8,weight:22},
+  {id:'guard',icon:'🛡️',name:'Guardia',damage:0,energy:2,weight:18},
+  {id:'move',icon:'👣',name:'Paso',damage:1,energy:2,weight:14},
+  {id:'takedown',icon:'🤼',name:'Derribo',damage:10,energy:13,weight:10},
+  {id:'heal',icon:'❤️',name:'Recuperar',damage:-5,energy:-7,weight:5}
+];
+let tiles=[], selected=[], dragging=false, playerHp=100, enemyHp=100, energy=100, turns=0, busy=false;
+const $=s=>document.querySelector(s), grid=$('#grid'), line=$('#pathLine');
+
+function weighted(){
+  let total=ACTIONS.reduce((a,b)=>a+b.weight,0), r=Math.random()*total;
+  for(const a of ACTIONS){r-=a.weight;if(r<=0)return a}
+  return ACTIONS[0];
+}
+function buildGrid(){
+  grid.innerHTML=''; tiles=[]; selected=[]; updateCombo();
+  for(let i=0;i<25;i++){
+    const a=weighted(), el=document.createElement('div');
+    el.className='tile'; el.dataset.index=i; el.innerHTML=`<span>${a.icon}</span><small>${a.name}</small>`;
+    grid.appendChild(el); tiles.push({el,a,index:i});
+  }
+}
+function adjacent(a,b){
+  const ar=Math.floor(a/5), ac=a%5, br=Math.floor(b/5), bc=b%5;
+  return Math.abs(ar-br)<=1 && Math.abs(ac-bc)<=1 && a!==b;
+}
+function start(i){
+  if(busy)return; dragging=true; clearSelection(); add(i);
+}
+function add(i){
+  if(!dragging || selected.includes(i))return;
+  if(selected.length && !adjacent(selected[selected.length-1],i))return;
+  selected.push(i); tiles[i].el.classList.add('selected'); navigator.vibrate?.(8); updateCombo(); drawPath();
+}
+function clearSelection(){
+  selected.forEach(i=>tiles[i].el.classList.remove('selected')); selected=[]; line.setAttribute('points',''); updateCombo();
+}
+function drawPath(){
+  const gr=grid.getBoundingClientRect();
+  const pts=selected.map(i=>{
+    const r=tiles[i].el.getBoundingClientRect();
+    return `${r.left-gr.left+r.width/2},${r.top-gr.top+r.height/2}`;
+  }).join(' ');
+  line.setAttribute('points',pts);
+}
+function updateCombo(){
+  $('#combo').textContent=selected.length?selected.map(i=>tiles[i].a.icon).join(' '):'—';
+  $('#mult').textContent=`x${selected.length}`;
+  $('#endTurn').disabled=selected.length<2 || busy;
+}
+function pointerIndex(e){
+  const el=document.elementFromPoint(e.clientX,e.clientY)?.closest('.tile');
+  return el?Number(el.dataset.index):null;
+}
+grid.addEventListener('pointerdown',e=>{e.preventDefault();grid.setPointerCapture(e.pointerId);const i=pointerIndex(e);if(i!==null)start(i)});
+grid.addEventListener('pointermove',e=>{if(!dragging)return;const i=pointerIndex(e);if(i!==null)add(i)});
+grid.addEventListener('pointerup',()=>{dragging=false;if(selected.length>=2) execute();else clearSelection()});
+grid.addEventListener('pointercancel',()=>{dragging=false;clearSelection()});
+$('#endTurn').onclick=execute;
+$('#shuffle').onclick=()=>{if(!busy){energy=Math.max(0,energy-8);buildGrid();message('Has cambiado el ritmo. -8 energía');updateBars()}};
+
+function message(t){$('#message').textContent=t}
+function delay(ms){return new Promise(r=>setTimeout(r,ms))}
+function updateBars(){
+  $('#enemyHp').style.width=enemyHp+'%'; $('#enemyHpText').textContent=Math.ceil(enemyHp);
+  $('#playerHp').style.width=playerHp+'%'; $('#playerHpText').textContent=Math.ceil(playerHp);
+  $('#energy').style.width=energy+'%';
+}
+async function execute(){
+  if(busy || selected.length<2)return;
+  busy=true; dragging=false; $('#endTurn').disabled=true; turns++;
+  const acts=selected.map(i=>tiles[i].a);
+  const cost=Math.max(0,acts.reduce((s,a)=>s+a.energy,0));
+  if(cost>energy){
+    message('No tienes energía para ese combo');
+    busy=false; clearSelection(); return;
+  }
+  energy=Math.min(100,energy-cost+6);
+  let damage=0, guard=0, heal=0, valid=0;
+  for(let n=0;n<acts.length;n++){
+    const a=acts[n]; message(`${a.icon} ${a.name}`);
+    const me=$('#meDot'), rival=$('#rivalDot');
+    if(a.id==='guard'){guard+=8; me.style.bottom='7%'}
+    else if(a.id==='move'){valid++; me.style.left=(38+Math.random()*24)+'%'}
+    else if(a.id==='heal'){heal+=5; playerHp=Math.min(100,playerHp+5)}
+    else{
+      valid++;
+      let bonus=1+Math.min(.8,n*.08);
+      if(n>0 && acts[n-1].id==='jab' && a.id==='kick')bonus+=.25;
+      if(n>0 && acts[n-1].id==='move' && a.id==='takedown')bonus+=.35;
+      damage+=a.damage*bonus;
+      me.style.bottom=(16+Math.random()*10)+'%';
+      rival.classList.remove('hit'); void rival.offsetWidth; rival.classList.add('hit');
+      $('#flash').classList.remove('on'); void $('#flash').offsetWidth; $('#flash').classList.add('on');
+    }
+    updateBars(); navigator.vibrate?.(a.id==='takedown'?[30,30,70]:18); await delay(170);
+  }
+  const chain=acts.length;
+  damage*=1+Math.max(0,chain-3)*.07;
+  enemyHp=Math.max(0,enemyHp-damage);
+  selected.forEach(i=>tiles[i].el.classList.add('used'));
+  updateBars();
+  message(chain>=8?`🔥 COMBO DE ${chain} · ${Math.round(damage)} de daño`:`Combo de ${chain} · ${Math.round(damage)} de daño`);
+  await delay(450);
+  if(enemyHp<=0){finish(true);return}
+  await enemyTurn(guard);
+  if(playerHp<=0){finish(false);return}
+  const used=[...selected]; clearSelection();
+  used.forEach(i=>{
+    const a=weighted(); tiles[i].a=a; tiles[i].el.innerHTML=`<span>${a.icon}</span><small>${a.name}</small>`; tiles[i].el.classList.remove('used');
+  });
+  energy=Math.min(100,energy+8); updateBars(); busy=false;
+  message('Tu turno. Dibuja el siguiente combo');
+}
+async function enemyTurn(guard){
+  message('El rival está leyendo tu posición…'); await delay(450);
+  const roll=Math.random(); let dmg,txt;
+  if(roll<.22){dmg=14;txt='🤼 El rival consigue un derribo'}
+  else if(roll<.52){dmg=9;txt='🦵 Low kick del rival'}
+  else{dmg=6;txt='🥊 Directo del rival'}
+  dmg=Math.max(0,dmg-guard);
+  message(txt+(guard?` · Bloqueas ${Math.min(guard,Math.round(dmg+guard))}`:''));
+  $('#meDot').classList.remove('hit'); void $('#meDot').offsetWidth; $('#meDot').classList.add('hit');
+  playerHp=Math.max(0,playerHp-dmg); navigator.vibrate?.([30,40,35]); updateBars(); await delay(420);
+}
+function finish(win){
+  busy=true;
+  $('#overlay').classList.add('show');
+  $('#resultEmoji').textContent=win?'🏆':'🥴';
+  $('#resultTitle').textContent=win?'Victoria por KO':'Derrota';
+  $('#resultText').textContent=win?`Has terminado el combate en ${turns} turnos. La base funciona: deslizar, construir y contemplar el combo.`:'El rival te ha parado. Prueba combos más cortos y usa la guardia.';
+}
+function reset(){
+  playerHp=enemyHp=energy=100; turns=0; busy=false; $('#overlay').classList.remove('show');
+  $('#meDot').style.left='calc(50% - 20px)'; $('#meDot').style.bottom='4%'; buildGrid();updateBars();message('Desliza por fichas contiguas y levanta el dedo');
+}
+$('#restart').onclick=reset;
+buildGrid();updateBars();
+</script>
+</body>
+</html>
